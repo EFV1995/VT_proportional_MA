@@ -1,0 +1,58 @@
+#Map creation
+
+library(ggplot2)
+library(dplyr)
+install.packages("maps")
+install.packages("mapdata")
+library(maps)
+library(mapdata)
+
+world_coordinates <- map_data("world")
+
+highlighted_countries <- c("China","Italy", "Japan","Norway","USA","Spain","UK","Ireland","Australia","Sweden","Canada","Israel","Denmark","Russia","Belgium","Finland","Indonesia","Switzerland","Ghana","Iran","Ethiopia")  # Replace with your list of countries
+
+# Create a bounding box to limit the extent of the map (adjust the values as needed)
+bbox <- data.frame(
+  long = c(-180, 180),
+  lat = c(-54, 90) #modify latitudes accordingly
+)
+
+# Filter world_coordinates to exclude the southern pole
+world_coordinates_filtered <- world_coordinates %>%
+  filter(lat >= -54)
+
+# Create the world map plot for the specified extent with a white background
+world_map_plot <- ggplot() +
+  geom_polygon(
+    data = world_coordinates_filtered,
+    aes(x = long, y = lat, group = group),
+    fill = "lightgray",  # Fill color for countries not in the list
+    color = "black"      # Border color for all countries
+  ) +
+  coord_cartesian(xlim = c(-180, 180), ylim = c(-54, 90)) +
+  theme_minimal() +  # Set a minimal theme
+  theme(
+    plot.background = element_rect(fill = "white"),
+    axis.line = element_blank(),       # Remove axis lines
+    axis.text = element_blank(),       # Remove axis labels
+    axis.title = element_blank()       # Remove axis titles
+  ) 
+#view the map without layers
+world_map_plot
+
+# Filter world_coordinates to include only the highlighted countries
+highlighted_country_data <- world_coordinates %>%
+  filter(region %in% highlighted_countries)
+
+# Add a layer to fill the selected countries with a different color
+highlighted_map <- world_map_plot +
+  geom_polygon(
+    data = highlighted_country_data,
+    aes(x = long, y = lat, group = group),
+    fill = "forestgreen",   # Fill color for highlighted countries
+    color = "black" # Border color for all countries
+  ) + theme_void() +
+  theme(panel.grid = element_blank())
+
+#view the map
+highlighted_map
